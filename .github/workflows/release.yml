@@ -8,12 +8,12 @@ on:
 jobs:
   check:
     name: Run format & lint & build check
-    uses: dashbrains/rubocop-config/.github/workflows/lint_format.yml@main
+    uses: dashbrains/konstruo/.github/workflows/lint_format.yml@main
 
   test:
     name: Run tests and Rspec
     needs: [ check ]
-    uses: dashbrains/rubocop-config/.github/workflows/test.yml@main
+    uses: dashbrains/konstruo/.github/workflows/test.yml@main
 
   release-please:
     runs-on: ubuntu-latest
