@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/DashBrains/konstruo/compare/v1.0.0...v1.0.1) (2024-09-07)
+
+
+### Bug Fixes
+
+* require mapper ([53ff950](https://github.com/DashBrains/konstruo/commit/53ff9505a866b3d45832f5027caf5a5df122b084))
+
 ## 1.0.0 (2024-09-07)
 
 
