@@ -1,0 +1,46 @@
+name: release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    name: Run format & lint & build check
+    uses: dashbrains/rubocop-config/.github/workflows/lint_format.yml@main
+
+  test:
+    name: Run tests and Rspec
+    needs: [ check ]
+    uses: dashbrains/rubocop-config/.github/workflows/test.yml@main
+
+  release-please:
+    runs-on: ubuntu-latest
+    needs: [ test ]
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v4
+        id: release
+        with:
+          release-type: ruby
+          token: "${{ secrets.PAT_TOKEN }}"
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+      - uses: ruby/setup-ruby@v1
+        if: ${{ steps.release.outputs.release_created }}
+      - run: bundle install
+        if: ${{ steps.release.outputs.release_created }}
+      - name: publish gem
+        run: |
+          mkdir -p $HOME/.gem
+          touch $HOME/.gem/credentials
+          chmod 0600 $HOME/.gem/credentials
+          printf -- "---\n:rubygems_api_key: ${GEM_HOST_API_KEY}\n" > $HOME/.gem/credentials
+          gem build *.gemspec
+          gem push *.gem
+        env:
+          GEM_HOST_API_KEY: "${{secrets.RUBYGEMS_AUTH_TOKEN}}"
+        if: ${{ steps.release.outputs.release_created }}

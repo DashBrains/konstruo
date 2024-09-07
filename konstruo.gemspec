@@ -11,8 +11,8 @@ Gem::Specification.new do |spec|
   spec.authors = ['DashBrains']
   spec.email = ['contact@dashbrains.dev']
 
-  spec.summary = 'Write a short summary, because RubyGems requires one.'
-  spec.description = 'Write a longer description or delete this line.'
+  spec.summary = 'A gem that seamlessly converts JSON or hashes into Ruby objects with customizable field validation, type safety, and nested object support.'
+  spec.description = 'A gem that seamlessly converts JSON or hashes into Ruby objects with customizable field validation, type safety, and nested object support.'
   spec.homepage = 'https://github.com/DashBrains/konstruo'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.1.0'
@@ -40,7 +40,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency('activesupport')
   spec.add_dependency('sorbet-static-and-runtime', '>= 0.5.11087')
 
-  # For more information and examples about making a new gem, check out our
-  # guide at: https://bundler.io/guides/creating_gem.html
   spec.metadata['rubygems_mfa_required'] = 'true'
 end
