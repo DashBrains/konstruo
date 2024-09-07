@@ -3,6 +3,7 @@
 
 require 'sorbet-runtime'
 require_relative 'konstruo/version'
+require_relative 'konstruo/mapper'
 
 module Konstruo
   class ValidationError < StandardError; end

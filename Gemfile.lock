@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    konstruo (1.0.0)
+    konstruo (1.0.1)
       actionpack
       activesupport
       sorbet-static-and-runtime (>= 0.5.11087)
