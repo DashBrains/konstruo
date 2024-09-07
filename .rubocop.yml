@@ -1,0 +1,22 @@
+inherit_gem:
+  dashbrains-rubocop-config:
+    - rubocop.yml
+require:
+  - rubocop-rake
+
+AllCops:
+  DisplayCopNames: true
+  DisplayStyleGuide: true
+  NewCops: enable
+  TargetRubyVersion: <%= RUBY_VERSION[/\d+\.\d+/] %>
+  Exclude:
+    - "bin/*"
+    - db/schema.rb
+    - "node_modules/**/*"
+    - "tmp/**/*"
+    - "vendor/**/*"
+  UseCache: true
+  CacheRootDirectory: "tmp/cache/rubocop"
+
+Rails/RakeEnvironment:
+  Enabled: false
