@@ -29,7 +29,7 @@ jobs:
       - name: Run bundler-audit
         run: bundle exec bundler-audit --update
 
-  bsorbet:
+  sorbet:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
