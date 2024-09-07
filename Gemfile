@@ -13,6 +13,8 @@ group :development, :test do
   gem 'tapioca', require: false
 
   gem 'spoom'
+  
+  gem 'bundler-audit', require: false
 end
 
 gem 'rake'
