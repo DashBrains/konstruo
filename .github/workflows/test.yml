@@ -1,0 +1,25 @@
+name: Test & Rspec
+on:
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  rspec:
+    runs-on: ubuntu-latest
+    name: Ruby ${{ matrix.ruby }}
+    strategy:
+      matrix:
+        ruby:
+          - '3.3.2'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Run Rspec test
+        run: bundle exec rspec --format progress
