@@ -3,7 +3,6 @@
 
 require 'konstruo/mapper'
 require 'tapioca/dsl/compiler'
-require 'pathname'
 
 module Tapioca
   module Dsl
@@ -41,7 +40,7 @@ module Tapioca
               klass.create_method(field_name, return_type: accessor_type)
               klass.create_method(
                 "#{field_name}=",
-                parameters: [create_param('value', type: accessor_type)],
+                parameters:  [create_param('value', type: accessor_type)],
                 return_type: accessor_type
               )
             end

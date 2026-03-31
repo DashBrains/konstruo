@@ -4,4 +4,5 @@
 require 'minitest/autorun'
 $LOAD_PATH.unshift(File.expand_path('../lib', __dir__))
 require 'konstruo'
-require_relative 'support/sample_mappers'
+
+Dir[File.expand_path('support/*.rb', __dir__)].sort.each { |path| require path }

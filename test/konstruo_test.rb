@@ -35,25 +35,46 @@ class KonstruoTest < Minitest::Test
     }.to_json
   end
 
-  def test_from_json_parses_valid_json
+  def test_from_json_parses_basic_scalar_fields
     person = Person.from_json(valid_json)
 
     assert_equal('John Doe', person.name)
     assert_equal(30, person.age)
     assert_equal('john@example.com', person.email)
+  end
+
+  def test_from_json_parses_nested_and_array_fields
+    person = Person.from_json(valid_json)
+
     assert_equal('123 Main St', person.address.street)
     assert_equal('New York', person.address.city)
+    assert_equal(2, person.addresses.size)
+  end
+
+  def test_from_json_parses_mapped_and_transformed_fields
+    person = Person.from_json(valid_json)
+
     assert_equal(42, person.user_id)
     assert_equal(Date.new(2023, 8, 31), person.signup_date)
     assert_equal(%w[Alice Bob Charlie], person.friends)
+  end
+
+  def test_from_json_parses_boolean_field
+    person = Person.from_json(valid_json)
+
     assert(person.is_active)
   end
 
-  def test_from_json_parses_array_of_nested_objects
+  def test_from_json_parses_array_of_nested_objects_metadata
     person = Person.from_json(valid_json)
 
     assert_equal('John Doe', person.name)
     assert_equal(2, person.addresses.size)
+  end
+
+  def test_from_json_parses_array_of_nested_objects_values
+    person = Person.from_json(valid_json)
+
     assert_equal('123 Main St', T.must(person.addresses[0]).street)
     assert_equal('Los Angeles', T.must(person.addresses[1]).city)
   end
@@ -64,17 +85,33 @@ class KonstruoTest < Minitest::Test
     assert_equal('addresses[0]: Street is required.', error.message)
   end
 
-  def test_from_hash_parses_valid_hash
+  def test_from_hash_parses_basic_scalar_fields
     person = Person.from_hash(valid_hash)
 
     assert_equal('John Doe', person.name)
     assert_equal(30, person.age)
     assert_equal('john@example.com', person.email)
+  end
+
+  def test_from_hash_parses_nested_fields
+    person = Person.from_hash(valid_hash)
+
     assert_equal('123 Main St', person.address.street)
     assert_equal('New York', person.address.city)
+    assert_equal(2, person.addresses.size)
+  end
+
+  def test_from_hash_parses_mapped_and_transformed_fields
+    person = Person.from_hash(valid_hash)
+
     assert_equal(42, person.user_id)
     assert_equal(Date.new(2023, 8, 31), person.signup_date)
     assert_equal(%w[Alice Bob Charlie], person.friends)
+  end
+
+  def test_from_hash_parses_boolean_field
+    person = Person.from_hash(valid_hash)
+
     assert(person.is_active)
   end
 

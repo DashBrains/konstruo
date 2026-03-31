@@ -8,7 +8,6 @@ require 'minitest/autorun'
 require 'rails/all'
 require 'sorbet-runtime'
 
-sample_mappers = File.expand_path('../../test/support/sample_mappers.rb', __dir__)
-require sample_mappers if File.exist?(sample_mappers)
+Dir[File.expand_path('../../test/support/*.rb', __dir__)].sort.each { |path| require path }
 
 require 'konstruo/mapper'
