@@ -59,6 +59,24 @@ module Konstruo
         )
       end
 
+      sig { params(value: T::Boolean).void }
+      def strict_unknown_keys(value = true)
+        T.unsafe(self).instance_variable_set(:@strict_unknown_keys, value)
+      end
+
+      sig { returns(T::Boolean) }
+      def strict_unknown_keys?
+        value = T.let(T.unsafe(self).instance_variable_get(:@strict_unknown_keys), T.nilable(T::Boolean))
+        value == true
+      end
+
+      sig { params(subclass: T.class_of(Konstruo::Mapper)).void }
+      def inherited(subclass)
+        super
+        subclass.instance_variable_set(:@fields, fields.dup)
+        subclass.instance_variable_set(:@strict_unknown_keys, strict_unknown_keys?)
+      end
+
       sig { params(json_string: String).returns(T.attached_class) }
       def from_json(json_string)
         parsed = JSON.parse(json_string)
@@ -90,6 +108,8 @@ module Konstruo
 
     sig { params(hash: InputHash).returns(T.self_type) }
     def from_hash(hash)
+      validate_unknown_keys!(hash) if self.class.strict_unknown_keys?
+
       self.class.fields.each do |field|
         key = field.custom_name
         symbol_key = key.to_sym
@@ -116,6 +136,15 @@ module Konstruo
 
     private
 
+    sig { params(hash: InputHash).void }
+    def validate_unknown_keys!(hash)
+      allowed_keys = Set.new(self.class.fields.map(&:custom_name))
+      unknown_keys = hash.keys.map(&:to_s).reject { |key| allowed_keys.include?(key) }.uniq.sort
+      return if unknown_keys.empty?
+
+      raise Konstruo::ValidationError, "Unknown fields: #{unknown_keys.join(", ")}"
+    end
+
     sig do
       params(
         field_name:    Symbol,
@@ -139,7 +168,11 @@ module Konstruo
               raise Konstruo::ValidationError, (error_message || "Expected Hash for field: #{field_name}[#{index}], got #{element.class}")
             end
 
-            element_type.new.from_hash(element)
+            begin
+              element_type.new.from_hash(element)
+            rescue Konstruo::ValidationError => e
+              raise Konstruo::ValidationError, prefix_nested_error(e.message, "#{field_name}[#{index}]")
+            end
           else
             validate_type!(element, element_type, "#{field_name}[#{index}]", error_message)
             element
@@ -150,7 +183,12 @@ module Konstruo
       elsif field_type < Konstruo::Mapper
         raise Konstruo::ValidationError, (error_message || "Expected Hash for field: #{field_name}, got #{value.class}") unless value.is_a?(Hash)
 
-        send(:"#{field_name}=", field_type.new.from_hash(value))
+        mapped_value = begin
+          field_type.new.from_hash(value)
+        rescue Konstruo::ValidationError => e
+          raise Konstruo::ValidationError, prefix_nested_error(e.message, field_name.to_s)
+        end
+        send(:"#{field_name}=", mapped_value)
       else
         validate_type!(value, field_type, field_name, error_message)
         send(:"#{field_name}=", value)
@@ -175,6 +213,24 @@ module Konstruo
           raise Konstruo::ValidationError, (error_message || "Expected #{expected_type} for field: #{field_name}, got #{value.class}")
         end
       end
+    end
+
+    sig { params(message: String, prefix: String).returns(String) }
+    def prefix_nested_error(message, prefix)
+      missing_field_match = message.match(/\AMissing required field: (.+)\z/)
+      if missing_field_match
+        return "Missing required field: #{prefix}.#{T.must(missing_field_match[1])}"
+      end
+
+      type_error_match = message.match(/\AExpected (.+) for field: (.+), got (.+)\z/)
+      if type_error_match
+        expected = T.must(type_error_match[1])
+        field_path = T.must(type_error_match[2])
+        actual = T.must(type_error_match[3])
+        return "Expected #{expected} for field: #{prefix}.#{field_path}, got #{actual}"
+      end
+
+      "#{prefix}: #{message}"
     end
   end
 end

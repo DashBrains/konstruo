@@ -88,7 +88,7 @@ RSpec.describe Konstruo do
     it 'raises ValidationError if an element in the array is invalid' do
       invalid_json = valid_hash.tap { |h| h[:addresses][0].tap { |x| x[:street] = nil } }.to_json
 
-      expect { Person.from_json(invalid_json) }.to raise_error(Konstruo::ValidationError, 'Street is required.')
+      expect { Person.from_json(invalid_json) }.to raise_error(Konstruo::ValidationError, 'addresses[0]: Street is required.')
     end
   end
 
@@ -176,7 +176,7 @@ RSpec.describe Konstruo do
 
     it 'raises ValidationError if nested object validation fails' do
       invalid_json = valid_hash.tap { |h| h[:address][:street] = nil }.to_json
-      expect { Person.from_json(invalid_json) }.to raise_error(Konstruo::ValidationError, 'Street is required.')
+      expect { Person.from_json(invalid_json) }.to raise_error(Konstruo::ValidationError, 'address: Street is required.')
     end
   end
 
@@ -215,6 +215,55 @@ RSpec.describe Konstruo do
           field :invalid, [String, Integer]
         end
       end.to raise_error(ArgumentError, 'Array field type must contain exactly one class')
+    end
+  end
+
+  describe 'inheritance' do
+    it 'inherits parent field definitions into subclasses' do
+      parent_mapper = Class.new(Konstruo::Mapper) do
+        field :id, Integer, required: true
+      end
+
+      child_mapper = Class.new(parent_mapper) do
+        field :name, String, required: true
+      end
+
+      model = child_mapper.from_hash({ id: 10, name: 'Jane' })
+      expect(model.id).to eq(10)
+      expect(model.name).to eq('Jane')
+    end
+  end
+
+  describe 'strict unknown keys mode' do
+    it 'raises for unknown keys when strict mode is enabled' do
+      strict_person = Class.new(Konstruo::Mapper) do
+        strict_unknown_keys
+        field :name, String, required: true
+      end
+
+      expect { strict_person.from_hash({ name: 'Jane', extra: 'value' }) }
+        .to raise_error(Konstruo::ValidationError, 'Unknown fields: extra')
+    end
+
+    it 'allows unknown keys by default' do
+      loose_person = Class.new(Konstruo::Mapper) do
+        field :name, String, required: true
+      end
+
+      person = loose_person.from_hash({ name: 'Jane', extra: 'value' })
+      expect(person.name).to eq('Jane')
+    end
+  end
+
+  describe 'nested error paths' do
+    it 'prefixes nested missing-field errors with full path' do
+      invalid_json = valid_hash.tap { |h| h[:address].delete(:city) }.to_json
+      expect { Person.from_json(invalid_json) }.to raise_error(Konstruo::ValidationError, 'Missing required field: address.city')
+    end
+
+    it 'prefixes nested array errors with full path' do
+      invalid_json = valid_hash.tap { |h| h[:addresses][0].delete(:city) }.to_json
+      expect { Person.from_json(invalid_json) }.to raise_error(Konstruo::ValidationError, 'Missing required field: addresses[0].city')
     end
   end
 end

@@ -7,6 +7,8 @@ Konstruo maps JSON, hashes, and Rails params into typed Ruby objects with:
 - Custom key mapping (for example `userId` -> `user_id`)
 - Value transformation hooks (mappers)
 - Nested object support (including arrays of nested objects)
+- Inherited field definitions for mapper subclasses
+- Optional strict mode to reject unknown input keys
 
 ## Installation
 
@@ -71,6 +73,24 @@ person.signup_date  # => #<Date: 2023-08-31 ...>
 person.address.city # => "New York"
 ```
 
+## Inheritance
+
+Mapper fields are inherited by subclasses:
+
+```ruby
+class BasePayload < Konstruo::Mapper
+  field :request_id, String, required: true, custom_name: 'requestId'
+end
+
+class CreateUserPayload < BasePayload
+  field :name, String, required: true
+end
+
+payload = CreateUserPayload.from_hash(requestId: 'abc-123', name: 'Jane')
+payload.request_id # => "abc-123"
+payload.name       # => "Jane"
+```
+
 ## Defining Fields
 
 Field API:
@@ -96,6 +116,8 @@ Supported type patterns:
 - Array of primitives: `[String]`, `[Integer]`, etc.
 - Array of nested mappers: `[Address]`
 
+Array type declarations must contain exactly one element class (for example `[String]`).
+
 ## Parsing Input
 
 Konstruo supports three entry points:
@@ -105,6 +127,11 @@ Konstruo supports three entry points:
 - `YourMapper.from_params(action_controller_params)`
 
 All return an instance of your mapper class.
+
+Notes:
+
+- `from_hash` accepts string or symbol keys.
+- `from_json` expects a JSON object at the root and raises `Konstruo::ValidationError` otherwise.
 
 ```ruby
 person = Person.from_hash(
@@ -141,9 +168,43 @@ Expected String for field: friends[0], got Integer
 Expected Boolean for field: is_active, got String
 ```
 
+`Konstruo::Boolean` only accepts real booleans (`true` or `false`).
+
+### Nested error paths
+
+Errors coming from nested mappers are prefixed with their full path:
+
+```text
+address: Street is required.
+addresses[0]: Street is required.
+Missing required field: address.city
+```
+
+### Strict unknown key mode
+
+Enable strict mode in a mapper to reject keys that are not declared with `field`:
+
+```ruby
+class StrictPerson < Konstruo::Mapper
+  strict_unknown_keys
+  field :name, String, required: true
+end
+
+StrictPerson.from_hash(name: 'Jane', extra: 'value')
+# => raises Konstruo::ValidationError: Unknown fields: extra
+```
+
+By default, unknown keys are ignored.  
+Strict mode is inherited by subclasses.  
+You can explicitly disable it with `strict_unknown_keys(false)`.
+
 ### Custom mappers
 
 Mapper lambdas are executed as provided. If they raise (for example `Date.parse`), that error bubbles up.
+
+### Custom error messages
+
+`error_message:` is used for both missing required fields and type errors on that field.
 
 ## Rails Params Support
 
