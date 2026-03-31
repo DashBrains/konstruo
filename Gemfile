@@ -8,7 +8,7 @@ gemspec
 group :development, :test do
   gem 'rails'
 
-  gem 'rspec'
+  gem 'minitest'
 
   gem 'tapioca', require: false
 

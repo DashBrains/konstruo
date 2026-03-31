@@ -206,6 +206,20 @@ Mapper lambdas are executed as provided. If they raise (for example `Date.parse`
 
 `error_message:` is used for both missing required fields and type errors on that field.
 
+## Sorbet Integration
+
+`field` is defined dynamically at runtime, so static typing for generated accessors comes from Tapioca DSL RBIs.
+
+Konstruo exports a Tapioca DSL compiler from the gem path `tapioca/dsl/compilers`, so consumer apps pick it up automatically when Konstruo is in the bundle.
+
+Run:
+
+```bash
+bundle exec tapioca dsl
+```
+
+The compiler generates typed accessors for mapper fields, so you do not need to manually write repeated `sig + attr_accessor` declarations for each field.
+
 ## Rails Params Support
 
 Use `from_params` when parsing `ActionController::Parameters`:
@@ -221,7 +235,7 @@ end
 
 ```bash
 bin/setup
-bundle exec rspec
+bundle exec rake test
 ```
 
 Useful commands:

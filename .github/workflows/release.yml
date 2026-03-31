@@ -11,7 +11,7 @@ jobs:
     uses: dashbrains/konstruo/.github/workflows/lint_format.yml@main
 
   test:
-    name: Run tests and Rspec
+    name: Run tests
     needs: [ check ]
     uses: dashbrains/konstruo/.github/workflows/test.yml@main
 

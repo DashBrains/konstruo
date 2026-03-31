@@ -34,6 +34,19 @@ module Konstruo
         initialized
       end
 
+      sig { returns(T::Array[T.class_of(::Konstruo::Mapper)]) }
+      def descendants
+        existing = T.let(
+          T.unsafe(self).instance_variable_get(:@descendants),
+          T.nilable(T::Array[T.class_of(::Konstruo::Mapper)])
+        )
+        return existing unless existing.nil?
+
+        initialized = T.let([], T::Array[T.class_of(::Konstruo::Mapper)])
+        T.unsafe(self).instance_variable_set(:@descendants, initialized)
+        initialized
+      end
+
       sig do
         params(
           name:          Symbol,
@@ -75,6 +88,7 @@ module Konstruo
         super
         subclass.instance_variable_set(:@fields, fields.dup)
         subclass.instance_variable_set(:@strict_unknown_keys, strict_unknown_keys?)
+        ::Konstruo::Mapper.send(:register_descendant, subclass)
       end
 
       sig { params(json_string: String).returns(T.attached_class) }
@@ -103,6 +117,13 @@ module Konstruo
         return if type.size == 1 && type.first.is_a?(Class)
 
         raise ArgumentError, 'Array field type must contain exactly one class'
+      end
+
+      sig { params(subclass: T.class_of(::Konstruo::Mapper)).void }
+      def register_descendant(subclass)
+        root = ::Konstruo::Mapper
+        list = root.descendants
+        list << subclass unless list.include?(subclass)
       end
     end
 
