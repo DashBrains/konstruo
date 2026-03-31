@@ -11,7 +11,7 @@ module Konstruo
   class Boolean
     extend T::Sig
 
-    sig { params(value: T.untyped).returns(Boolean) }
+    sig { params(value: T.untyped).returns(T::Boolean) }
     def self.boolean?(value)
       value.is_a?(TrueClass) || value.is_a?(FalseClass)
     end

@@ -45,7 +45,7 @@ RSpec.describe Konstruo do
       email:      'john@example.com',
       address:    { street: '123 Main St', city: 'New York' },
       addresses:  [{ street: '123 Main St', city: 'New York' },
-                   { street: '456 Maple Ave', city: 'Los Angeles' }],
+        { street: '456 Maple Ave', city: 'Los Angeles' }],
       userId:     42,
       signupDate: '2023-08-31',
       friends:    %w[Alice Bob Charlie],
@@ -177,6 +177,44 @@ RSpec.describe Konstruo do
     it 'raises ValidationError if nested object validation fails' do
       invalid_json = valid_hash.tap { |h| h[:address][:street] = nil }.to_json
       expect { Person.from_json(invalid_json) }.to raise_error(Konstruo::ValidationError, 'Street is required.')
+    end
+  end
+
+  describe 'falsey and malformed inputs' do
+    it 'accepts false for required boolean fields' do
+      payload = valid_hash.merge(is_active: false).to_json
+      person = Person.from_json(payload)
+
+      expect(person.is_active).to be(false)
+    end
+
+    it 'raises ValidationError when root JSON is not an object' do
+      expect { Person.from_json('["not", "an", "object"]') }
+        .to raise_error(Konstruo::ValidationError, 'Expected JSON object at root')
+    end
+
+    it 'raises ValidationError when nested mapper field is not a hash' do
+      invalid_json = valid_hash.merge(address: 'not-a-hash').to_json
+
+      expect { Person.from_json(invalid_json) }
+        .to raise_error(Konstruo::ValidationError, 'Expected Hash for field: address, got String')
+    end
+
+    it 'raises ValidationError when nested mapper array element is not a hash' do
+      invalid_json = valid_hash.merge(addresses: ['bad-element']).to_json
+
+      expect { Person.from_json(invalid_json) }
+        .to raise_error(Konstruo::ValidationError, 'Expected Hash for field: addresses[0], got String')
+    end
+  end
+
+  describe 'field definition validation' do
+    it 'raises ArgumentError for invalid array type declarations' do
+      expect do
+        Class.new(Konstruo::Mapper) do
+          field :invalid, [String, Integer]
+        end
+      end.to raise_error(ArgumentError, 'Array field type must contain exactly one class')
     end
   end
 end
