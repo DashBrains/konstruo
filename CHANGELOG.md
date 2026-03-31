@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.2](https://github.com/DashBrains/konstruo/compare/v1.0.1...v1.0.2) (2026-03-31)
+
+
+### Features
+
+* dependencies upgrade ([99cf328](https://github.com/DashBrains/konstruo/commit/99cf328777114dbdec699f0855f1028a1cf65c5a))
+* harden mapper validation ([c79db34](https://github.com/DashBrains/konstruo/commit/c79db343a1aeebb7566ca24b23760a0d71fd8808))
+* improve parsing and logic ([6ee7acd](https://github.com/DashBrains/konstruo/commit/6ee7acd6556203e21cadb0a0773319fd5429bc9a))
+
+
+### Miscellaneous Chores
+
+* **release:** force version bump ([7380066](https://github.com/DashBrains/konstruo/commit/7380066927747bef07ea2e557155c5e89e35ff93))
+* **release:** force version bump ([41378dc](https://github.com/DashBrains/konstruo/commit/41378dcf047cb5621d685e6764a7d617e547a7f5))
+
 ## [1.0.1](https://github.com/DashBrains/konstruo/compare/v1.0.0...v1.0.1) (2024-09-07)
 
 
