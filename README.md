@@ -96,7 +96,7 @@ payload.name       # => "Jane"
 Field API:
 
 ```ruby
-field(name, type, required: false, custom_name: nil, mapper: nil, error_message: nil)
+field(name, type, required: false, nullable: nil, custom_name: nil, mapper: nil, error_message: nil)
 ```
 
 Options:
@@ -104,6 +104,7 @@ Options:
 - `name` (`Symbol`): Ruby attribute name.
 - `type` (`Class` or `[Class]`): Expected value type.
 - `required` (`Boolean`): Raises `Konstruo::ValidationError` when missing.
+- `nullable` (`Boolean`, optional): Controls whether a present key can have `nil` value.
 - `custom_name` (`String`): External key name to read from input.
 - `mapper` (`Proc`): Converts raw input value before assignment.
 - `error_message` (`String`): Custom validation error message.
@@ -117,6 +118,11 @@ Supported type patterns:
 - Array of nested mappers: `[Address]`
 
 Array type declarations must contain exactly one element class (for example `[String]`).
+
+`nullable` default behavior:
+
+- If `required: true` and `nullable` is omitted, `nullable` defaults to `false`.
+- If `required: false` and `nullable` is omitted, `nullable` defaults to `true`.
 
 ## Parsing Input
 
@@ -156,6 +162,17 @@ Default message format:
 
 ```text
 Missing required field: field_name
+```
+
+### Nullability
+
+When a key is present with `nil` value:
+
+- `nullable: true` allows it.
+- `nullable: false` raises:
+
+```text
+Field cannot be nil: field_name
 ```
 
 ### Type errors

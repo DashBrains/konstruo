@@ -16,6 +16,7 @@ module Konstruo
       const :name, Symbol
       const :type, FieldType
       const :required, T::Boolean
+      const :nullable, T::Boolean
       const :custom_name, String
       const :mapper, T.nilable(T.proc.params(value: T.untyped).returns(T.untyped))
       const :error_message, T.nilable(String)
@@ -52,20 +53,23 @@ module Konstruo
           name:          Symbol,
           type:          FieldType,
           required:      T::Boolean,
+          nullable:      T.nilable(T::Boolean),
           custom_name:   T.nilable(String),
           mapper:        T.nilable(T.proc.params(value: T.untyped).returns(T.untyped)),
           error_message: T.nilable(String)
         ).void
       end
-      def field(name, type, required: false, custom_name: nil, mapper: nil, error_message: nil)
+      def field(name, type, required: false, nullable: nil, custom_name: nil, mapper: nil, error_message: nil)
         attr_accessor name unless method_defined?(name)
 
         validate_field_type!(type)
+        resolved_nullable = nullable.nil? ? !required : nullable
 
         fields << FieldDefinition.new(
           name:          name,
           type:          type,
           required:      required,
+          nullable:      resolved_nullable,
           custom_name:   custom_name || name.to_s,
           mapper:        mapper,
           error_message: error_message
@@ -146,7 +150,9 @@ module Konstruo
         value = has_string_key ? hash[key] : hash[symbol_key]
 
         if value.nil?
-          raise Konstruo::ValidationError, (field.error_message || "Missing required field: #{key}") if field.required
+          raise Konstruo::ValidationError, (field.error_message || "Field cannot be nil: #{key}") unless field.nullable
+
+          send(:"#{field.name}=", nil)
         else
           assign_value(field.name, field.type, value, field.mapper, field.error_message)
         end

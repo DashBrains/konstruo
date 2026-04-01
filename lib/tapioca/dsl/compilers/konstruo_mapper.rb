@@ -34,7 +34,7 @@ module Tapioca
           root.create_path(constant) do |klass|
             constant.fields.each do |field|
               field_type = as_type_string(field.type)
-              accessor_type = field.required ? field_type : "T.nilable(#{field_type})"
+              accessor_type = (field.required && !field.nullable) ? field_type : "T.nilable(#{field_type})"
               field_name = field.name.to_s
 
               klass.create_method(field_name, return_type: accessor_type)

@@ -242,4 +242,69 @@ class KonstruoTest < Minitest::Test
     error = assert_raises(Konstruo::ValidationError) { Person.from_json(invalid_json) }
     assert_equal('Missing required field: addresses[0].city', error.message)
   end
+
+  def test_nullable_defaults_to_non_nullable_when_required
+    field = T.must(NullableMapper.fields.find { |f| f.name == :required_non_nullable_default })
+
+    refute(field.nullable)
+  end
+
+  def test_nullable_defaults_to_nullable_when_not_required
+    field = T.must(NullableMapper.fields.find { |f| f.name == :optional_nullable_default })
+
+    assert(field.nullable)
+  end
+
+  def test_required_nullable_accepts_nil_when_present
+    mapper = NullableMapper.from_hash(
+      required_non_nullable_default: 'x',
+      required_nullable:             nil,
+      required_non_nullable:         'y'
+    )
+
+    assert_nil(mapper.required_nullable)
+  end
+
+  def test_required_nullable_still_requires_key_presence
+    error = assert_raises(Konstruo::ValidationError) do
+      NullableMapper.from_hash(
+        required_non_nullable_default: 'x',
+        required_non_nullable:         'y'
+      )
+    end
+    assert_equal('Missing required field: required_nullable', error.message)
+  end
+
+  def test_required_non_nullable_rejects_nil
+    error = assert_raises(Konstruo::ValidationError) do
+      NullableMapper.from_hash(
+        required_non_nullable_default: 'x',
+        required_nullable:             'y',
+        required_non_nullable:         nil
+      )
+    end
+    assert_equal('Field cannot be nil: required_non_nullable', error.message)
+  end
+
+  def test_optional_non_nullable_rejects_nil_if_present
+    error = assert_raises(Konstruo::ValidationError) do
+      NullableMapper.from_hash(
+        required_non_nullable_default: 'x',
+        required_nullable:             'y',
+        required_non_nullable:         'z',
+        optional_non_nullable:         nil
+      )
+    end
+    assert_equal('Field cannot be nil: optional_non_nullable', error.message)
+  end
+
+  def test_optional_non_nullable_can_be_missing
+    mapper = NullableMapper.from_hash(
+      required_non_nullable_default: 'x',
+      required_nullable:             'y',
+      required_non_nullable:         'z'
+    )
+
+    assert_nil(mapper.optional_non_nullable)
+  end
 end
