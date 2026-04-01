@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.3](https://github.com/DashBrains/konstruo/compare/v1.0.2...v1.0.3) (2026-04-01)
+
+
+### Features
+
+* add nilable field ([c3422ea](https://github.com/DashBrains/konstruo/commit/c3422ea68611223f77bfcdee2b6497a302bfc975))
+
+
+### Miscellaneous Chores
+
+* **release:** 1.0.3 ([86ae552](https://github.com/DashBrains/konstruo/commit/86ae552f0aff66bbdbdda20a06e549f5e38bff51))
+
 ## [1.0.2](https://github.com/DashBrains/konstruo/compare/v1.0.1...v1.0.2) (2026-03-31)
 
 
